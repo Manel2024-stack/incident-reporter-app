@@ -1,16 +1,16 @@
-version: '3.8'
-
 services:
-  api:
-    build: ./backend
+  incident-reporter-api:
+    build:
+      context: ./backend
     container_name: incident-reporter-api
     ports:
       - "3000:3000"
-    restart: always
+    environment:
+      - PORT=3000
 
-  frontend:
-    build: ./frontend 
+  incident-reporter-frontend:
+    build:
+      context: ./frontend
     container_name: incident-reporter-frontend
     ports:
-      - "80:80" 
-    restart: always
+      - "80:80"
