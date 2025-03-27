@@ -1,29 +1,10 @@
 version: '3.8'
 
 services:
-  mongo:
-    image: mongo
-    container_name: incident-reporter-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   api:
-    image: manel2024/incident-reporter-api:latest
+    build: ./backend
     container_name: incident-reporter-api
     ports:
       - "3000:3000"
-    depends_on:
-      mongo:
-        condition: service_healthy
-    environment:
-      - MONGO_URL=mongodb://mongo:27017/incidents
-
-volumes:
-  mongo-data:
+    volumes:
+      - ./backend:/app
