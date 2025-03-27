@@ -1,4 +1,5 @@
-version: '3'
+version: '3.8'
+
 services:
   mongo:
     image: mongo
@@ -7,6 +8,11 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
     image: manel2024/incident-reporter-api:latest
@@ -14,8 +20,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - mongo
-    restart: always
+      mongo:
+        condition: service_healthy
     environment:
       - MONGO_URL=mongodb://mongo:27017/incidents
 
