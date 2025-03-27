@@ -15,7 +15,7 @@ pipeline {
     stage('Push de l\'image vers Docker Hub') {
   steps {
     echo "📦 Push de l'image vers Docker Hub..."
-    sh 'docker push elkebir74/incident-reporter-api:latest'
+    sh 'docker push manel2024/incident-reporter-api:latest'
       }
     }
 
