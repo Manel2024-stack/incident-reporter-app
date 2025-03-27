@@ -22,11 +22,14 @@ pipeline {
 
     stage('Vérification de l\'API') {
       steps {
-        echo "Test de l'endpoint /status..."
+        echo " Attente du démarrage de l'API..."
+        sh 'sleep 10'
+        echo " Test de l\'endpoint /status..."
         sh 'curl --fail http://localhost:3000/status || exit 1'
       }
     }
-  }
+
+  } 
 
   post {
     success {
