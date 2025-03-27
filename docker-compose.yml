@@ -1,16 +1,23 @@
+version: '3'
 services:
+  mongo:
+    image: mongo
+    container_name: incident-reporter-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
   api:
-    build:
-      context: ./backend
     image: manel2024/incident-reporter-api:latest
-
-
+    container_name: incident-reporter-api
     ports:
       - "3000:3000"
     depends_on:
       - mongo
+    restart: always
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/incidents
 
-  mongo:
-    image: mongo
-    ports:
-      - "27017:27017"
+volumes:
+  mongo-data:
