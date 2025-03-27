@@ -7,10 +7,20 @@ pipeline {
 
   stages {
 
+    stage('🧹 Nettoyage environnement') {
+      steps {
+        echo "🧨 Suppression des anciens conteneurs et volumes..."
+        sh '''
+          docker rm -f incident-reporter-api incident-reporter-mongo || true
+          docker volume rm incident-reporter-pipeline_mongo-data || true
+        '''
+      }
+    }
+
     stage('🔐 Login Docker Hub') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
+          sh 'echo $DOCKER_PASS | docker login -u manel2024 --password-stdin'
         }
       }
     }
@@ -29,24 +39,27 @@ pipeline {
 
     stage('🚀 Déploiement') {
       steps {
-        sh 'docker-compose down'
-        sh 'docker-compose up -d'
+        sh '''
+          docker-compose down
+          docker-compose up -d
+        '''
       }
     }
 
     stage('🧪 Vérification de l\'API') {
       steps {
-        echo "⏳ Attente du démarrage de l'API..."
+        echo '⏳ Attente du démarrage de l\'API...'
         sh 'sleep 20'
-        echo "✅ Test de l\'endpoint /status..."
+        echo '✅ Test de l\'endpoint /status...'
         sh 'curl --fail http://localhost:3000/status || exit 1'
       }
     }
+
   }
 
   post {
     success {
-      echo '✅ Déploiement réussi et image poussée avec succès !'
+      echo '✅ Déploiement réussi !'
     }
     failure {
       echo '❌ Une erreur est survenue pendant le pipeline.'
