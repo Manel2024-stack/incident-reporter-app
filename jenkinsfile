@@ -37,6 +37,20 @@ pipeline {
       }
     }
 
+    stage('🔎 Scan de sécurité avec Trivy') {
+      steps {
+        echo "🛡️ Analyse de l'image avec Trivy..."
+        sh '''
+          if ! command -v trivy > /dev/null; then
+            echo "🚨 Trivy n'est pas installé !"
+            exit 1
+          fi
+          
+          trivy image --severity HIGH,CRITICAL --exit-code 1 incident-reporter-api || exit 1
+        '''
+      }
+    }
+
     stage("📤 Push de l'image vers Docker Hub") {
       steps {
         sh 'docker push manel2024/incident-reporter-api:latest'
@@ -53,16 +67,15 @@ pipeline {
     }
 
     stage('🧪 Vérification de l\'API') {
-  steps {
-    echo '⏳ Attente du démarrage de l\'API...'
-    sh '''
-      sleep 10
-      echo '✅ Test de l\'API à l\'intérieur du conteneur...'
-      curl --fail http://192.168.8.4:3000/status || exit 1
-    '''
-  }
-}
-
+      steps {
+        echo '⏳ Attente du démarrage de l\'API...'
+        sh '''
+          sleep 10
+          echo '✅ Test de l\'API à l\'intérieur du conteneur...'
+          curl --fail http://localhost:3000/status || exit 1
+        '''
+      }
+    }
   }
 
   post {
