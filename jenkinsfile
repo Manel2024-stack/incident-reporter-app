@@ -31,6 +31,18 @@ pipeline {
       }
     }
 
+    stage('🧪 Tests unitaires') {
+      steps {
+        dir('backend') {
+          echo "🧪 Lancement des tests unitaires..."
+          sh '''
+            npm install
+            npm test || exit 1
+          '''
+        }
+      }
+    }
+
     stage('⚙️ Build des conteneurs') {
       steps {
         sh 'docker-compose build'
@@ -42,11 +54,12 @@ pipeline {
         echo "🛡️ Analyse de l'image avec Trivy..."
         sh '''
           if ! command -v trivy > /dev/null; then
-            echo "🚨 Trivy n'est pas installé !"
+            echo "🚨 Trivy n'est pas installé sur l'agent Jenkins."
             exit 1
           fi
-          
-          trivy image --severity HIGH,CRITICAL --exit-code 1 incident-reporter-api || exit 1
+
+          # Scan avec exit-code 1 si HIGH/CRITICAL => échoue si faille
+          trivy image --severity HIGH,CRITICAL --exit-code 1 incident-reporter-api
         '''
       }
     }
