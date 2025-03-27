@@ -58,7 +58,7 @@ pipeline {
     sh '''
       sleep 10
       echo '✅ Test de l\'API à l\'intérieur du conteneur...'
-      docker exec incident-reporter-api curl --fail http://localhost:3000/status || exit 1
+      curl --fail http://192.168.8.4:3000/status || exit 1
     '''
   }
 }
