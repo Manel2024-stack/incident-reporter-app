@@ -11,7 +11,7 @@ pipeline {
       steps {
         echo "🧨 Suppression des anciens conteneurs et volumes..."
         sh '''
-          docker rm -f incident-reporter-api incident-reporter-mongo || true
+          docker rm -f incident-reporter-api incident-reporter-frontend incident-reporter-mongo || true
           docker volume rm incident-reporter-pipeline_mongo-data || true
         '''
       }
@@ -31,10 +31,10 @@ pipeline {
       }
     }
 
-    stage('🧪 Tests unitaires') {
+    stage('🧪 Tests unitaires backend') {
       steps {
         dir('backend') {
-          echo "🧪 Lancement des tests unitaires..."
+          echo "🧪 Lancement des tests backend..."
           sh '''
             npm install
             npm test || exit 1
@@ -49,24 +49,30 @@ pipeline {
       }
     }
 
-    stage('🔎 Scan de sécurité avec Trivy') {
+    stage('🔎 Scan de sécurité avec Trivy (backend + frontend)') {
       steps {
-        echo "🛡️ Analyse de l'image avec Trivy..."
+        echo "🛡️ Analyse des images avec Trivy..."
         sh '''
           if ! command -v trivy > /dev/null; then
             echo "🚨 Trivy n'est pas installé sur l'agent Jenkins."
             exit 1
           fi
 
-          # Scan avec exit-code 1 si HIGH/CRITICAL => échoue si faille
           trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-api
+          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-frontend
         '''
       }
     }
 
-    stage("📤 Push de l'image vers Docker Hub") {
+    stage("📤 Push des images vers Docker Hub") {
       steps {
-        sh 'docker push manel2024/incident-reporter-api:latest'
+        sh '''
+          docker tag incident-reporter-api manel2024/incident-reporter-api:latest
+          docker tag incident-reporter-frontend manel2024/incident-reporter-frontend:latest
+
+          docker push manel2024/incident-reporter-api:latest
+          docker push manel2024/incident-reporter-frontend:latest
+        '''
       }
     }
 
@@ -79,13 +85,16 @@ pipeline {
       }
     }
 
-    stage('🧪 Vérification de l\'API') {
+    stage('🧪 Vérification des services') {
       steps {
-        echo '⏳ Attente du démarrage de l\'API...'
+        echo '⏳ Attente du démarrage...'
         sh '''
           sleep 10
-          echo '✅ Test de l\'API à l\'intérieur du conteneur...'
-          curl --fail http://localhost:3000/status || exit 1
+          echo '✅ Test de l\'API backend...'
+          curl --fail http://192.168.8.4:3000/status || exit 1
+
+          echo '🌐 Test du frontend (vérification HTTP 200)...'
+          curl --fail http://localhost || exit 1
         '''
       }
     }
@@ -93,7 +102,7 @@ pipeline {
 
   post {
     success {
-      echo '✅ Déploiement réussi !'
+      echo '✅ Déploiement complet réussi !'
     }
     failure {
       echo '❌ Une erreur est survenue pendant le pipeline.'
