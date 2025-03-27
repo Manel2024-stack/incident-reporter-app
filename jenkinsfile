@@ -42,6 +42,15 @@ pipeline {
         }
       }
     }
+    stage('🔍 Analyse SonarQube') {
+      steps {
+        withSonarQubeEnv('SonarQube') {
+        dir('backend') {
+          sh 'sonar-scanner'
+         }
+        }
+      }
+   }
 
     stage('⚙️ Build des conteneurs') {
       steps {
