@@ -1,4 +1,5 @@
-FROM node:18-slim
+FROM node:18-bookworm-slim
+
 
 # Met à jour la base Debian pour réduire les vulnérabilités système
 RUN apt-get update && apt-get upgrade -y && apt-get clean
