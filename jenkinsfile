@@ -46,9 +46,9 @@ pipeline {
     stage('🔍 Analyse SonarQube') {
       steps {
         withSonarQubeEnv('SonarQube') {
-        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-        dir('backend') {
-          sh 'sonar-scanner -Dsonar.login=$SONAR_TOKEN'
+          withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+            dir('backend') {
+              sh 'sonar-scanner -Dsonar.login=$SONAR_TOKEN'
             }
           }
         }
@@ -70,8 +70,8 @@ pipeline {
             exit 1
           fi
 
-          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-api
-          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-frontend
+          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-incident-reporter-api
+          trivy image --severity HIGH,CRITICAL --exit-code 0 incident-reporter-incident-reporter-frontend
         '''
       }
     }
@@ -79,8 +79,8 @@ pipeline {
     stage("📤 Push des images vers Docker Hub") {
       steps {
         sh '''
-          docker tag incident-reporter-api manel2024/incident-reporter-api:latest
-          docker tag incident-reporter-frontend manel2024/incident-reporter-frontend:latest
+          docker tag incident-reporter-incident-reporter-api manel2024/incident-reporter-api:latest
+          docker tag incident-reporter-incident-reporter-frontend manel2024/incident-reporter-frontend:latest
 
           docker push manel2024/incident-reporter-api:latest
           docker push manel2024/incident-reporter-frontend:latest
