@@ -1,0 +1,45 @@
+pipeline {
+  agent any
+
+  environment {
+    COMPOSE_PROJECT_NAME = "incident-reporter"
+  }
+
+  stages {
+
+    stage('Cloner le projet') {
+      steps {
+        git url: 'https://github.com/ton-utilisateur/incident-reporter-app.git'
+      }
+    }
+
+    stage('Build des conteneurs') {
+      steps {
+        sh 'docker-compose build'
+      }
+    }
+
+    stage('Déploiement') {
+      steps {
+        sh 'docker-compose down'
+        sh 'docker-compose up -d'
+      }
+    }
+
+    stage('Vérification de l\'API') {
+      steps {
+        echo "Test de l'endpoint /status..."
+        sh 'curl --fail http://localhost:3000/status || exit 1'
+      }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Déploiement réussi !'
+    }
+    failure {
+      echo '❌ Une erreur est survenue pendant le pipeline.'
+    }
+  }
+}
