@@ -4,6 +4,9 @@ pipeline {
   environment {
     COMPOSE_PROJECT_NAME = "incident-reporter"
   }
+  tools {
+  sonarQubeScanner 'SonarScanner'
+}
 
   stages {
 
