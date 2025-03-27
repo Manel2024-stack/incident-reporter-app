@@ -4,9 +4,6 @@ pipeline {
   environment {
     COMPOSE_PROJECT_NAME = "incident-reporter"
   }
-  tools {
-  sonarQubeScanner 'SonarScanner'
-}
 
   stages {
 
@@ -45,15 +42,16 @@ pipeline {
         }
       }
     }
+
     stage('🔍 Analyse SonarQube') {
       steps {
         withSonarQubeEnv('SonarQube') {
-        dir('backend') {
-          sh 'sonar-scanner'
-         }
+          dir('backend') {
+            sh 'sonar-scanner'
+          }
         }
       }
-   }
+    }
 
     stage('⚙️ Build des conteneurs') {
       steps {
