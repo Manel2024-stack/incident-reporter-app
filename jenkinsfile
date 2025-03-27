@@ -9,7 +9,7 @@ pipeline {
 
     stage('Cloner le projet') {
       steps {
-        git url: git url: 'https://github.com/elkebir74/incident-reporter-app.git'
+        git url: 'https://github.com/elkebir74/incident-reporter-app.git'
 
       }
     }
