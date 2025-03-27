@@ -19,7 +19,7 @@ pipeline {
 
     stage('🔐 Login Docker Hub') {
       steps {
-        withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
+        withCredentials([string(credentialsId: 'dockerhub-creds', variable: 'DOCKER_PASS')]) {
           sh 'echo $DOCKER_PASS | docker login -u manel2024 --password-stdin'
         }
       }
