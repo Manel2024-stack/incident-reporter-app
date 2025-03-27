@@ -6,5 +6,6 @@ services:
     container_name: incident-reporter-api
     ports:
       - "3000:3000"
+    restart: always
     volumes:
       - ./backend:/app
