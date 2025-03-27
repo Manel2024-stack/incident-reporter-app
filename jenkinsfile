@@ -86,20 +86,17 @@ pipeline {
     }
 
     stage('🧪 Vérification des services') {
-      steps {
-        echo '⏳ Attente du démarrage...'
-        sh '''
-          sleep 10
-          echo '✅ Test de l\'API backend...'
-          curl --fail http://192.168.8.4:3000/status || exit 1
-
-          echo '🌐 Test du frontend (vérification HTTP 200)...'
-          curl --fail http://localhost || exit 1
-        '''
-      }
-    }
+  steps {
+    echo '⏳ Attente du démarrage...'
+    sh '''
+      sleep 10
+      echo "✅ Test de l'API backend..."
+      curl --fail http://localhost:3000/status || exit 1
+      echo "🌐 Test du frontend (HTTP 200 attendu)..."
+      curl --fail http://localhost || exit 1
+    '''
   }
-
+}
   post {
     success {
       echo '✅ Déploiement complet réussi !'
