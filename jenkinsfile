@@ -7,40 +7,46 @@ pipeline {
 
   stages {
 
-    stage('Build des conteneurs') {
+    stage('🔐 Login Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        }
+      }
+    }
+
+    stage('⚙️ Build des conteneurs') {
       steps {
         sh 'docker-compose build'
       }
     }
-    stage('Push de l\'image vers Docker Hub') {
-  steps {
-    echo "📦 Push de l'image vers Docker Hub..."
-    sh 'docker push manel2024/incident-reporter-api:latest'
+
+    stage('📤 Push de l\'image vers Docker Hub') {
+      steps {
+        sh 'docker push manel2024/incident-reporter-api:latest'
       }
     }
 
-
-    stage('Déploiement') {
+    stage('🚀 Déploiement') {
       steps {
         sh 'docker-compose down'
         sh 'docker-compose up -d'
       }
     }
 
-    stage('Vérification de l\'API') {
+    stage('🧪 Vérification de l\'API') {
       steps {
-        echo " Attente du démarrage de l'API..."
+        echo "⏳ Attente du démarrage de l'API..."
         sh 'sleep 10'
-        echo " Test de l\'endpoint /status..."
+        echo "✅ Test de l\'endpoint /status..."
         sh 'curl --fail http://localhost:3000/status || exit 1'
       }
     }
-
-  } 
+  }
 
   post {
     success {
-      echo '✅ Déploiement réussi !'
+      echo '✅ Déploiement réussi et image poussée avec succès !'
     }
     failure {
       echo '❌ Une erreur est survenue pendant le pipeline.'
