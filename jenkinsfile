@@ -52,15 +52,15 @@ pipeline {
       }
     }
 
-    stage("🧪 Vérification de l'API") {
-      steps {
-        echo '⏳ Attente du démarrage de l\'API...'
-        sh 'sleep 20'
-        echo '✅ Test de l\'endpoint /status...'
-        sh 'curl --fail http://incident-reporter-api:3000/status || exit 1'
-      }
-    }
+    stage('🧪 Vérification de l\'API') {
+  steps {
+    echo '⏳ Attente du démarrage de l\'API...'
+    sh 'sleep 20'
+    echo '✅ Test de l\'endpoint /status...'
+    sh 'curl --fail http://localhost:3000/status || exit 1'
   }
+}
+
 
   post {
     success {
