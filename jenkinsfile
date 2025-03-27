@@ -19,8 +19,14 @@ pipeline {
 
     stage('🔐 Login Docker Hub') {
       steps {
-        withCredentials([string(credentialsId: 'dockerhub-creds', variable: 'DOCKER_PASS')]) {
-          sh 'echo $DOCKER_PASS | docker login -u manel2024 --password-stdin'
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+          '''
         }
       }
     }
@@ -31,7 +37,7 @@ pipeline {
       }
     }
 
-    stage('📤 Push de l\'image vers Docker Hub') {
+    stage("📤 Push de l'image vers Docker Hub") {
       steps {
         sh 'docker push manel2024/incident-reporter-api:latest'
       }
@@ -46,7 +52,7 @@ pipeline {
       }
     }
 
-    stage('🧪 Vérification de l\'API') {
+    stage("🧪 Vérification de l'API") {
       steps {
         echo '⏳ Attente du démarrage de l\'API...'
         sh 'sleep 20'
@@ -54,7 +60,6 @@ pipeline {
         sh 'curl --fail http://localhost:3000/status || exit 1'
       }
     }
-
   }
 
   post {
