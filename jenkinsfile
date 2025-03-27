@@ -12,6 +12,13 @@ pipeline {
         sh 'docker-compose build'
       }
     }
+    stage('Push de l\'image vers Docker Hub') {
+  steps {
+    echo "📦 Push de l'image vers Docker Hub..."
+    sh 'docker push elkebir74/incident-reporter-api:latest'
+      }
+    }
+
 
     stage('Déploiement') {
       steps {
