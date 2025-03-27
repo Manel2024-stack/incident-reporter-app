@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -7,34 +7,53 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost:27017";
-const dbName = "incidentdb";
+// Init DB
+const db = new sqlite3.Database('incidents.db');
 
-let db, incidents;
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS incidents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT,
+    priority TEXT,
+    status TEXT DEFAULT 'open',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    closedAt DATETIME
+  )`);
+});
 
-MongoClient.connect(mongoUrl, { useUnifiedTopology: true })
-  .then(client => {
-    db = client.db(dbName);
-    incidents = db.collection('incidents');
-    app.listen(port, () => console.log(`API running on port ${port}`));
-  })
-  .catch(err => console.error(err));
-
+// Routes
 app.get('/status', (req, res) => res.send({ status: 'API is running' }));
 
-app.post('/incidents', async (req, res) => {
+app.post('/incidents', (req, res) => {
   const { message, priority } = req.body;
-  const result = await incidents.insertOne({ message, priority, status: 'open', createdAt: new Date() });
-  res.send(result);
+  db.run(
+    `INSERT INTO incidents (message, priority) VALUES (?, ?)`,
+    [message, priority],
+    function (err) {
+      if (err) return res.status(500).send(err);
+      res.send({ id: this.lastID });
+    }
+  );
 });
 
-app.get('/incidents', async (req, res) => {
-  const result = await incidents.find().toArray();
-  res.send(result);
+app.get('/incidents', (req, res) => {
+  db.all(`SELECT * FROM incidents`, [], (err, rows) => {
+    if (err) return res.status(500).send(err);
+    res.send(rows);
+  });
 });
 
-app.put('/incidents/:id/close', async (req, res) => {
-  const { id } = req.params;
-  await incidents.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'closed', closedAt: new Date() } });
-  res.send({ message: 'Incident closed' });
+app.put('/incidents/:id/close', (req, res) => {
+  db.run(
+    `UPDATE incidents SET status = 'closed', closedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+    [req.params.id],
+    function (err) {
+      if (err) return res.status(500).send(err);
+      res.send({ message: 'Incident closed' });
+    }
+  );
+});
+
+app.listen(port, () => {
+  console.log(`API is running at http://localhost:${port}`);
 });
