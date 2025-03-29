@@ -113,18 +113,19 @@ pipeline {
         echo '⏳ Vérification des services déployés sur Kubernetes...'
         sshagent(['cle-ssh-k8s']) {
             sh '''
-                ssh sysadmin@192.168.8.9 "
+                ssh sysadmin@192.168.8.9 <<EOF
                   minikube_ip=$(minikube ip)
-                  echo \"🌐 Vérification de l'API backend...\"
+                  echo "🌐 Vérification de l'API backend..."
                   curl --fail http://$minikube_ip:31279/status || exit 1
 
-                  echo \"🌐 Vérification du frontend...\"
+                  echo "🌐 Vérification du frontend..."
                   curl --fail http://$minikube_ip:30743 || exit 1
-                "
+                EOF
             '''
-          }
         }
-      }
+    }
+}
+
 
 
     stage('🧪 Vérification des services Docker') {
