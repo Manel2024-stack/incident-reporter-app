@@ -112,18 +112,19 @@ pipeline {
       steps {
         echo '⏳ Vérification des services déployés sur Kubernetes...'
         sshagent(['cle-ssh-k8s']) {
-          sh '''
-            ssh sysadmin@192.168.8.9 "
-              echo \"🌐 Vérification de l'API backend...\"
-              curl --fail http://192.168.8.9:31279/status || exit 1
+            sh '''
+                ssh sysadmin@192.168.8.9 "
+                  echo \\"🌐 Vérification de l'API backend...\\"
+                  curl --fail http://192.168.8.9:31279/status || exit 1
 
-              echo \"🌐 Vérification du frontend...\"
-              curl --fail http://192.168.8.9:30743 || exit 1
-            "
-          '''
-        }
-      }
+                  echo \\"🌐 Vérification du frontend...\\"
+                  curl --fail http://192.168.8.9:30743 || exit 1
+                "
+            '''
+          }
+       }
     }
+
 
     stage('🧪 Vérification des services Docker') {
       steps {
