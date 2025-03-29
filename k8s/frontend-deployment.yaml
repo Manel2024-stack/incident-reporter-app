@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incident-frontend
+  labels:
+    app: incident-reporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: incident-frontend
+  template:
+    metadata:
+      labels:
+        app: incident-frontend
+    spec:
+      containers:
+        - name: incident-frontend
+          image: manel2024/incident-reporter-frontend:latest
+          ports:
+            - containerPort: 80
