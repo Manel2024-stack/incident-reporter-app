@@ -93,33 +93,45 @@ pipeline {
         sshagent(['cle-ssh-k8s']) {
           sh '''
             echo "📦 Copie des manifests vers la VM k8s..."
-            scp k8s/*.yaml sysadmin@192.168.8.9:/home/sysadmin/
+            scp k8s/*.yaml sysadmin@192.168.8.9:/home/sysadmin/ || exit 1
+
+            echo "🚀 Vérification des fichiers sur la VM K8s..."
+            ssh sysadmin@192.168.8.9 "ls -la /home/sysadmin/"
 
             echo "🚀 Déploiement des manifests sur le cluster..."
             ssh sysadmin@192.168.8.9 "
-              kubectl apply -f deployment.yaml
-              kubectl apply -f service.yaml
+              kubectl apply -f /home/sysadmin/backend-deployment.yaml
+              kubectl apply -f /home/sysadmin/backend-service.yaml
+              kubectl apply -f /home/sysadmin/frontend-deployment.yaml
+              kubectl apply -f /home/sysadmin/frontend-service.yaml
+              echo '✅ Vérification des pods...'
+              kubectl get pods
             "
           '''
         }
       }
     }
 
-    stage('🚀 Déploiement') {
+    stage('🚀 Vérification des services Kubernetes') {
       steps {
-        sh '''
-          docker-compose down
-          docker-compose up -d
-        '''
+        echo '⏳ Vérification des pods...'
+        sshagent(['cle-ssh-k8s']) {
+          sh '''
+            ssh sysadmin@192.168.8.9 "
+              echo '🔄 Vérification des services Kubernetes...'
+              kubectl get svc
+            "
+          '''
+        }
       }
     }
 
-    stage('🧪 Vérification des services') {
+    stage('🧪 Vérification des services Docker') {
       steps {
         echo '⏳ Attente du démarrage...'
         sh '''
           sleep 10
-          echo "✅ Test de l\'API backend..."
+          echo "✅ Test de l'API backend..."
           curl --fail http://localhost:3000/status || exit 1
           echo "🌐 Test du frontend (HTTP 200 attendu)..."
           curl --fail http://localhost || exit 1
