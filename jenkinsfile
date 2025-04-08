@@ -95,13 +95,13 @@ pipeline {
             echo "📦 Copie des manifests vers la VM k8s..."
             scp k8s/*.yaml sysadmin@192.168.8.9:/home/sysadmin/
 
-            echo "🚀 Déploiement des manifests sur le cluster via le proxy..."
+            echo "🚀 Déploiement des manifests sur le cluster directement..."
             ssh sysadmin@192.168.8.9 "
-              kubectl --server=http://192.168.8.9:8001 apply -f /home/sysadmin/backend-deployment.yaml
-              kubectl --server=http://192.168.8.9:8001 apply -f /home/sysadmin/backend-service.yaml
-              kubectl --server=http://192.168.8.9:8001 apply -f /home/sysadmin/frontend-deployment.yaml
-              kubectl --server=http://192.168.8.9:8001 apply -f /home/sysadmin/frontend-service.yaml
-              kubectl --server=http://192.168.8.9:8001 get pods
+              kubectl apply -f /home/sysadmin/backend-deployment.yaml
+              kubectl apply -f /home/sysadmin/backend-service.yaml
+              kubectl apply -f /home/sysadmin/frontend-deployment.yaml
+              kubectl apply -f /home/sysadmin/frontend-service.yaml
+              kubectl get pods
             "
           '''
         }
@@ -109,35 +109,34 @@ pipeline {
     }
 
     stage('🧪 Vérification des services Kubernetes') {
-    steps {
+      steps {
         echo '⏳ Vérification des services déployés sur Kubernetes...'
         sshagent(['cle-ssh-k8s']) {
-            sh '''
-                ssh sysadmin@192.168.8.9 <<EOF
-                  minikube_ip=$(minikube ip)
-                  echo "🌐 Vérification de l'API backend..."
-                  curl --fail http://$minikube_ip:31279/status || exit 1
+          sh '''
+            ssh sysadmin@192.168.8.9 <<EOF
+              minikube_ip=$(minikube ip)
+              echo "Minikube IP: $minikube_ip"
+              
+              echo "🌐 Vérification de l'API backend..."
+              curl --fail http://$minikube_ip:31279/status || exit 1
 
-                  echo "🌐 Vérification du frontend..."
-                  curl --fail http://$minikube_ip:30743 || exit 1
-                EOF
-            '''
+              echo "🌐 Vérification du frontend..."
+              curl --fail http://$minikube_ip:30743 || exit 1
+            EOF
+          '''
         }
+      }
     }
-}
-
-
-
 
     stage('🧪 Vérification des services Docker') {
       steps {
         echo '⏳ Attente du démarrage...'
         sh '''
           sleep 10
-          echo "✅ Test de l'API backend..."
-          curl --fail http://localhost:3000/status || exit 1
+          echo "✅ Test de l'API backend (Minikube IP)..."
+          curl --fail http://192.168.8.9:31279/status || exit 1
           echo "🌐 Test du frontend (HTTP 200 attendu)..."
-          curl --fail http://localhost || exit 1
+          curl --fail http://192.168.8.9:30743 || exit 1
         '''
       }
     }
