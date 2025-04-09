@@ -54,6 +54,7 @@ app.put('/incidents/:id/close', (req, res) => {
   );
 });
 
-app.listen(port, () => {
-  console.log(`API is running at http://localhost:${port}`);
+// Écoute sur toutes les interfaces réseau
+app.listen(port, '0.0.0.0', () => {
+  console.log(`✅ API is running at http://0.0.0.0:${port}`);
 });
