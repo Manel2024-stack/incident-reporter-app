@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: incident-frontend
   labels:
-    app: incident-reporter
+    app: incident-frontend  # ✅ Corrigé ici
 spec:
   replicas: 1
   selector:
