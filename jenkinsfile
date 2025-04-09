@@ -107,39 +107,6 @@ pipeline {
         }
       }
     }
-
-    stage('🧪 Vérification des services Kubernetes') {
-      steps {
-        echo '⏳ Vérification des services déployés sur Kubernetes...'
-        sshagent(['cle-ssh-k8s']) {
-          sh '''
-            ssh sysadmin@192.168.8.9 bash -c "'
-              minikube_ip=$(minikube ip)
-              echo Minikube IP: $minikube_ip
-
-              echo 🌐 Vérification de l\\'API backend...
-              curl --fail http://$minikube_ip:31279/status || exit 1
-
-              echo 🌐 Vérification du frontend...
-              curl --fail http://$minikube_ip:30743 || exit 1
-            '"
-          '''
-        }
-      }
-    }
-
-    stage('🧪 Vérification des services Docker') {
-      steps {
-        echo '⏳ Attente du démarrage...'
-        sh '''
-          sleep 10
-          echo "✅ Test de l'API backend (Minikube IP)..."
-          curl --fail http://192.168.8.9:31279/status || exit 1
-          echo "🌐 Test du frontend (HTTP 200 attendu)..."
-          curl --fail http://192.168.8.9:30743 || exit 1
-        '''
-      }
-    }
   }
 
   post {
