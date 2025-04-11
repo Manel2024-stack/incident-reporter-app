@@ -1,13 +1,23 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const prometheus = require('express-prometheus-middleware');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware Prometheus pour exporter les métriques sur /metrics
+app.use(prometheus({
+  metricsPath: '/metrics',
+  collectDefaultMetrics: true,
+  requestDurationBuckets: [0.1, 0.5, 1, 1.5, 2]
+}));
+
+// Middleware JSON et frontend
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Init DB
+// Init DB SQLite
 const db = new sqlite3.Database('incidents.db');
 
 db.serialize(() => {
@@ -21,7 +31,7 @@ db.serialize(() => {
   )`);
 });
 
-// Routes
+// Routes API
 app.get('/status', (req, res) => res.send({ status: 'API is running' }));
 
 app.post('/incidents', (req, res) => {
@@ -54,7 +64,7 @@ app.put('/incidents/:id/close', (req, res) => {
   );
 });
 
-// Écoute sur toutes les interfaces réseau
+// Lancement du serveur
 app.listen(port, '0.0.0.0', () => {
   console.log(`✅ API is running at http://0.0.0.0:${port}`);
 });
