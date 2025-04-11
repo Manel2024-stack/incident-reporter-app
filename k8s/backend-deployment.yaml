@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: incident-api
   labels:
-    app: incident-api  # ✅ Corrigé ici
+    app: incident-api  
 spec:
   replicas: 1
   selector:
