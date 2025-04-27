@@ -7,9 +7,9 @@ pipeline {
 
   stages {
 
-    stage('🧹 Nettoyage environnement') {
+    stage('Nettoyage environnement') {
       steps {
-        echo "🧨 Suppression des anciens conteneurs et volumes..."
+        echo "Suppression des anciens conteneurs et volumes..."
         sh '''
           docker rm -f incident-reporter-api incident-reporter-frontend incident-reporter-mongo || true
           docker volume rm incident-reporter-pipeline_mongo-data || true
@@ -17,7 +17,7 @@ pipeline {
       }
     }
 
-    stage('🔐 Login Docker Hub') {
+    stage('Login Docker Hub') {
       steps {
         withCredentials([usernamePassword(
           credentialsId: 'dockerhub-creds',
@@ -31,10 +31,10 @@ pipeline {
       }
     }
 
-    stage('🧪 Tests unitaires backend') {
+    stage('Tests unitaires backend') {
       steps {
         dir('backend') {
-          echo "🧪 Lancement des tests backend..."
+          echo "Lancement des tests backend..."
           sh '''
             npm install
             npm test || exit 1
@@ -43,7 +43,7 @@ pipeline {
       }
     }
 
-    stage('🔍 Analyse SonarQube') {
+    stage('Analyse SonarQube') {
       steps {
         withSonarQubeEnv('SonarQube') {
           withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
@@ -55,18 +55,18 @@ pipeline {
       }
     }
 
-    stage('⚙️ Build des conteneurs') {
+    stage('Build des conteneurs') {
       steps {
         sh 'docker-compose build'
       }
     }
 
-    stage('🔎 Scan de sécurité avec Trivy (backend + frontend)') {
+    stage('Scan de sécurité avec Trivy (backend + frontend)') {
       steps {
-        echo "🛡️ Analyse des images avec Trivy..."
+        echo "Analyse des images avec Trivy..."
         sh '''
           if ! command -v trivy > /dev/null; then
-            echo "🚨 Trivy n'est pas installé sur l'agent Jenkins."
+            echo "Trivy n'est pas installé sur l'agent Jenkins."
             exit 1
           fi
 
@@ -76,7 +76,7 @@ pipeline {
       }
     }
 
-    stage("📤 Push des images vers Docker Hub") {
+    stage("Push des images vers Docker Hub") {
       steps {
         sh '''
           docker tag incident-reporter-incident-reporter-api manel2024/incident-reporter-api:latest
@@ -88,14 +88,14 @@ pipeline {
       }
     }
 
-    stage('☁️ Déploiement sur Kubernetes') {
+    stage('Déploiement sur Kubernetes') {
       steps {
         sshagent(['cle-ssh-k8s']) {
           sh '''
-            echo "📦 Copie des manifests vers la VM k8s..."
+            echo "Copie des manifests vers la VM k8s..."
             scp k8s/*.yaml sysadmin@192.168.8.9:/home/sysadmin/
 
-            echo "🚀 Déploiement des manifests sur le cluster directement..."
+            echo "Déploiement des manifests sur le cluster directement..."
             ssh sysadmin@192.168.8.9 "
               kubectl apply -f /home/sysadmin/backend-deployment.yaml
               kubectl apply -f /home/sysadmin/backend-service.yaml
@@ -111,10 +111,10 @@ pipeline {
 
   post {
     success {
-      echo '✅ Déploiement complet réussi !'
+      echo 'Déploiement complet réussi !'
     }
     failure {
-      echo '❌ Une erreur est survenue pendant le pipeline.'
+      echo 'Une erreur est survenue pendant le pipeline.'
     }
   }
 }
