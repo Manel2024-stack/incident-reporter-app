@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: incident-reporter-db
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: incidentdb
+
+  incident-reporter-api:
+    build:
+      context: ./backend
+    container_name: incident-reporter-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://incident-reporter-db:27017/incidentdb
+    depends_on:
+      - mongodb
+
+  incident-reporter-frontend:
+    build:
+      context: ./frontend
+    container_name: incident-reporter-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - incident-reporter-api
+
+volumes:
+  mongo_data:
