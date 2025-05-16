@@ -60,7 +60,6 @@ stage('Nettoyage environnement') {
 }
 ```
 
-> *(Pas de capture ici car étape en ligne de commande)*
 
 ---
 
@@ -90,7 +89,6 @@ stage('Analyse SonarQube') {
 }
 ```
 
-> *(Tu peux ajouter ici un screenshot `captures/sonarqube.png` si disponible)*
 
 ---
 
@@ -104,7 +102,6 @@ stage('Build des conteneurs') {
 }
 ```
 
-> *(Étape technique sans interface graphique)*
 
 ---
 
@@ -118,7 +115,6 @@ stage('Scan de sécurité avec Trivy') {
 }
 ```
 
-> *(Ajoute éventuellement un `captures/trivy.png` si tu veux l'illustrer plus tard)*
 
 ---
 
@@ -132,7 +128,7 @@ stage("Push des images vers Docker Hub") {
 }
 ```
 
-> *(Étape backend, pas de capture nécessaire)*
+
 
 ---
 
